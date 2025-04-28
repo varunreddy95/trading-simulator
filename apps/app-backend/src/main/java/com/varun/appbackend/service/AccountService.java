@@ -6,7 +6,6 @@ import com.varun.appbackend.model.User;
 import com.varun.appbackend.repository.AccountRepository;
 import com.varun.appbackend.repository.UserRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -35,7 +34,7 @@ public class AccountService {
      */
     public Account createAccount(Long userId, BigDecimal initialBalance) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID"));
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         Account account = new Account();
         account.setUser(user);
@@ -80,5 +79,4 @@ public class AccountService {
         account.setBalance(account.getBalance().subtract(amount));
         return accountRepository.save(account);
     }
-
 }

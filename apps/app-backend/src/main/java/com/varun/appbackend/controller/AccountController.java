@@ -1,9 +1,9 @@
 package com.varun.appbackend.controller;
 
 
+import com.varun.appbackend.dto.AccountResponseDTO;
 import com.varun.appbackend.model.Account;
 import com.varun.appbackend.service.AccountService;
-import org.springframework.boot.autoconfigure.batch.BatchTransactionManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,23 +25,24 @@ public class AccountController {
     /**
      * POST a new trading account for a user
      *
-     * @param userId the ID of the user to associate the account with
+     * @param userId         the ID of the user to associate the account with
      * @param initialBalance the initial balance to set
      * @return the created Account object
      */
     @PostMapping("/create")
-    public ResponseEntity<Account> createAccount(@RequestParam long userId, @RequestParam BigDecimal initialBalance){
+    public ResponseEntity<AccountResponseDTO> createAccount(@RequestParam long userId, @RequestParam BigDecimal initialBalance){
         Account account = accountService.createAccount(userId, initialBalance);
-        return ResponseEntity.ok(account);
+        AccountResponseDTO response = new AccountResponseDTO(account.getId(), account.getBalance());
+        return ResponseEntity.ok(response);
     }
 
     /**
      * GET the account details for a give user
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Account> getAccountByUserId(@PathVariable long userId) {
+    public ResponseEntity<AccountResponseDTO> getAccountByUserId(@PathVariable long userId) {
         return accountService.getAccountByUserId(userId)
-                .map(ResponseEntity::ok)
+                .map(account -> ResponseEntity.ok(new AccountResponseDTO(account.getId(), account.getBalance())))
                 .orElse(ResponseEntity.notFound().build());
     }
 
