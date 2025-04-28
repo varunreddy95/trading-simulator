@@ -12,12 +12,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
+
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -39,16 +39,16 @@ public class UserControllerTest {
     private UserService userService;
 
     @Test
-    @DisplayName("Should register a new user")
+    @DisplayName("Should register a new user successfully")
     void shouldRegisterNewUser() throws Exception {
         User user = new User();
         user.setId(1L);
         user.setUsername("varun");
         user.setPassword("password");
 
-        when(userService.registerUser(any(User.class))).thenReturn(user);
+        when(userService.registerUser(user)).thenReturn(user);
 
-        mockMvc.perform(post("/api/users/register")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isOk())
@@ -57,32 +57,34 @@ public class UserControllerTest {
     }
 
     @Test
-    @DisplayName("Should fetch user by username")
+    @DisplayName("Should fetch user by username successfully")
     void shouldGetUserByUsername() throws Exception {
         User user = new User();
-        user.setId(1L);
-        user.setUsername("varun");
+        user.setId(2L);
+        user.setUsername("john");
+        user.setPassword("pass123");
 
-        when(userService.findUserByUsername("varun")).thenReturn(Optional.of(user));
+        when(userService.findUserByUsername("john")).thenReturn(Optional.of(user));
 
-        mockMvc.perform(get("/api/users/username/{username}", "varun"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/users/username/{username}", "john"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.username").value("varun"));
+                .andExpect(jsonPath("$.id").value(2L))
+                .andExpect(jsonPath("$.username").value("john"));
     }
 
     @Test
-    @DisplayName("Should fetch user by ID")
+    @DisplayName("Should fetch user by ID successfully")
     void shouldGetUserById() throws Exception {
         User user = new User();
-        user.setId(1L);
-        user.setUsername("varun");
+        user.setId(3L);
+        user.setUsername("alice");
+        user.setPassword("alice123");
 
-        when(userService.findById(1L)).thenReturn(Optional.of(user));
+        when(userService.findById(3L)).thenReturn(Optional.of(user));
 
-        mockMvc.perform(get("/api/users/{id}", 1L))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/users/{id}", 3L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.username").value("varun"));
+                .andExpect(jsonPath("$.id").value(3L))
+                .andExpect(jsonPath("$.username").value("alice"));
     }
 }

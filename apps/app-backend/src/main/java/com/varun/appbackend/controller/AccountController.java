@@ -30,11 +30,17 @@ public class AccountController {
      * @return the created Account object
      */
     @PostMapping("/create")
-    public ResponseEntity<AccountResponseDTO> createAccount(@RequestParam long userId, @RequestParam BigDecimal initialBalance){
+    public ResponseEntity<AccountResponseDTO> createAccount(@RequestParam long userId, @RequestParam BigDecimal initialBalance) {
         Account account = accountService.createAccount(userId, initialBalance);
-        AccountResponseDTO response = new AccountResponseDTO(account.getId(), account.getBalance());
-        return ResponseEntity.ok(response);
+
+        AccountResponseDTO dto = new AccountResponseDTO(
+                account.getId(),
+                account.getUser().getId(),
+                account.getBalance()
+        );
+        return ResponseEntity.ok(dto);
     }
+
 
     /**
      * GET the account details for a give user
@@ -42,7 +48,7 @@ public class AccountController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<AccountResponseDTO> getAccountByUserId(@PathVariable long userId) {
         return accountService.getAccountByUserId(userId)
-                .map(account -> ResponseEntity.ok(new AccountResponseDTO(account.getId(), account.getBalance())))
+                .map(account -> ResponseEntity.ok(new AccountResponseDTO(account.getId(), account.getUser().getId(), account.getBalance())))
                 .orElse(ResponseEntity.notFound().build());
     }
 

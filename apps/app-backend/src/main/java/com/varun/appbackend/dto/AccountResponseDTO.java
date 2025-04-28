@@ -15,5 +15,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class AccountResponseDTO {
     private Long id;
+    private Long userId;
     private BigDecimal balance;
 }

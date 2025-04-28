@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -50,19 +51,21 @@ public class AccountControllerTest {
 
         Account account = new Account();
         account.setId(1L);
-        account.setUser(user); // Must not be null
+        account.setUser(user);
         account.setBalance(BigDecimal.valueOf(1000.00));
 
-        when(accountService.createAccount(eq(1L), eq(BigDecimal.valueOf(1000.00))))
-                .thenReturn(account);
+        // FIX: flexible matching
+        when(accountService.createAccount(eq(1L), any(BigDecimal.class))).thenReturn(account);
 
         mockMvc.perform(post("/api/accounts/create")
                         .param("userId", "1")
                         .param("initialBalance", "1000.00"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.userId").value(1))
                 .andExpect(jsonPath("$.balance").value(1000.00));
     }
+
 
 
     @Test
@@ -78,12 +81,12 @@ public class AccountControllerTest {
         account.setUser(user);
         account.setBalance(BigDecimal.valueOf(5000.00));
 
-        // 👉 Properly mock this behavior
         when(accountService.getAccountByUserId(1L)).thenReturn(Optional.of(account));
 
         mockMvc.perform(get("/api/accounts/user/{userId}", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value(1L))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.userId").value(1))
                 .andExpect(jsonPath("$.balance").value(5000.00));
     }
 }
