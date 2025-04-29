@@ -10,7 +10,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-class UserServiceTest {
+public class UserServiceTest {
 
     private UserRepository userRepository;
     private UserService userService;
