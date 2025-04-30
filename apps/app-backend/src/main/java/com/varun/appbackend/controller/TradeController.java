@@ -3,12 +3,10 @@ package com.varun.appbackend.controller;
 import com.varun.appbackend.dto.TradeRequestDTO;
 import com.varun.appbackend.dto.TradeResponseDTO;
 import com.varun.appbackend.model.Trade;
-import com.varun.appbackend.model.TradeType;
 import com.varun.appbackend.service.TradeService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -28,7 +26,7 @@ public class TradeController {
      * POST endpoint to place a new trade
      */
     @PostMapping("/place")
-    public ResponseEntity<TradeResponseDTO> placeTrade(@RequestBody TradeRequestDTO requestDTO) {
+    public ResponseEntity<TradeResponseDTO> placeTrade(@Valid @RequestBody TradeRequestDTO requestDTO) {
         Trade trade = tradeService.placeTrade(
                 requestDTO.getUserId(),
                 requestDTO.getStockSymbol(),
