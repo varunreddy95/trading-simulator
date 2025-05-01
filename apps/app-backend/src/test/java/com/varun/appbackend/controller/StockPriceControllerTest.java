@@ -32,29 +32,24 @@ public class StockPriceControllerTest {
     private StockPriceService stockPriceService;
 
     @Test
-    @DisplayName("Should return stock price for a valid symbol")
+    @DisplayName("Should return stock price for valid symbol")
     void shouldReturnStockPrice() throws Exception {
-        String symbol = "AAPL";
-        BigDecimal expectedPrice = BigDecimal.valueOf(145.76);
+        when(stockPriceService.getCurrentPrice("AAPL")).thenReturn(BigDecimal.valueOf(150.00));
 
-        when(stockPriceService.getCurrentPrice(symbol)).thenReturn(expectedPrice);
-
-        mockMvc.perform(get("/api/stocks/{symbol}", symbol))
+        mockMvc.perform(get("/api/prices/AAPL"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(content().string(expectedPrice.toString()));
+                .andExpect(content().string("150.00"));
     }
 
     @Test
     @DisplayName("Should return 404 for invalid symbol")
     void shouldReturn404ForInvalidSymbol() throws Exception {
-        String symbol = "INVALID";
+        when(stockPriceService.getCurrentPrice("INVALID"))
+                .thenThrow(new StockNotFoundException("Price not found for symbol: INVALID"));
 
-        when(stockPriceService.getCurrentPrice(symbol))
-                .thenThrow(new StockNotFoundException("Stock symbol not found: " + symbol));
-
-        mockMvc.perform(get("/api/stocks/{symbol}", symbol))
+        mockMvc.perform(get("/api/prices/INVALID"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Stock symbol not found: " + symbol));
+                .andExpect(jsonPath("$.message").value("Price not found for symbol: INVALID"));
     }
+
 }

@@ -1,7 +1,6 @@
 package com.varun.appbackend.controller;
 
 import com.varun.appbackend.service.StockPriceService;
-import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,8 +26,11 @@ public class StockPriceController {
      * @return current stock price
      */
     @GetMapping("/{symbol}")
-    public ResponseEntity<BigDecimal> getPrice(@PathVariable String symbol) throws JSONException {
-        return ResponseEntity.ok(stockPriceService.getCurrentPrice(symbol));
+    public ResponseEntity<String> getPrice(@PathVariable String symbol) {
+        BigDecimal price = stockPriceService.getCurrentPrice(symbol);
+        return ResponseEntity.ok(String.format("%.2f", price));
     }
+
+
 
 }

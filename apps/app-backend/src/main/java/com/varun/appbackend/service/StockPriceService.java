@@ -28,7 +28,7 @@ public class StockPriceService {
      * @param symbol e.g. "AAPL", "GOOGL"
      * @return BigDecimal current price
      */
-    public BigDecimal getCurrentPrice(String symbol) throws JSONException {
+    public BigDecimal getCurrentPrice(String symbol) {
         String url = UriComponentsBuilder.newInstance()
                 .scheme("https")
                 .host(baseUrl)
@@ -40,13 +40,25 @@ public class StockPriceService {
                 .toUriString();
 
         String response = restTemplate.getForObject(url, String.class);
-        JSONObject jsonObject = new JSONObject(response);
-        JSONObject quote = jsonObject.getJSONObject("Global Quote");
 
-        if (!quote.has("05. price")) {
-            throw new StockNotFoundException(symbol);
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+
+            if (!jsonObject.has("Global Quote")) {
+                throw new StockNotFoundException("Price not found in response for symbol: " + symbol);
+            }
+
+            JSONObject quote = jsonObject.getJSONObject("Global Quote");
+
+            if (!quote.has("05. price")) {
+                throw new StockNotFoundException("Price not found in response for symbol: " + symbol);
+            }
+
+            return new BigDecimal(quote.getString("05. price"));
+
+        } catch (JSONException e) {
+            throw new StockNotFoundException("Invalid response format for symbol: " + symbol);
         }
-
-        return new BigDecimal(quote.getString("05. price"));
     }
+
 }
