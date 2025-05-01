@@ -4,13 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
- * DTO representing basic user position (symbol + quantity)
+ * DTO for returning stock price response to the client
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PositionResponseDTO {
+public class StockPriceResponseDTO {
+
     private String stockSymbol;
-    private int quantity;
+    private BigDecimal price;
+    private String currency;
 }

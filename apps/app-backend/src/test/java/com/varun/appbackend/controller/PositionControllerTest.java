@@ -4,6 +4,7 @@ import com.varun.appbackend.dto.PositionResponseDTO;
 import com.varun.appbackend.service.PositionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import com.varun.appbackend.dto.PositionPLResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -12,6 +13,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Arrays;
 
@@ -63,4 +65,26 @@ public class PositionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
+
+    @Test
+    @DisplayName("Should return P&L data for user positions")
+    void shouldReturnUserPositionsWithPL() throws Exception {
+        List<PositionPLResponseDTO> plList = Arrays.asList(
+                new PositionPLResponseDTO("AAPL", 10, new BigDecimal("150.00"), new BigDecimal("160.00"), new BigDecimal("100.00")),
+                new PositionPLResponseDTO("GOOGL", 5, new BigDecimal("100.00"), new BigDecimal("95.00"), new BigDecimal("-25.00"))
+        );
+
+        when(positionService.getUserPositionsWithPL(1L)).thenReturn(plList);
+
+        mockMvc.perform(get("/api/positions/user/{userId}/pl", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].stockSymbol").value("AAPL"))
+                .andExpect(jsonPath("$[0].quantity").value(10))
+                .andExpect(jsonPath("$[0].averageBuyPrice").value(150.00))
+                .andExpect(jsonPath("$[0].currentPrice").value(160.00))
+                .andExpect(jsonPath("$[0].profitOrLoss").value(100.00))
+                .andExpect(jsonPath("$[1].stockSymbol").value("GOOGL"))
+                .andExpect(jsonPath("$[1].profitOrLoss").value(-25.00));
+    }
+
 }
