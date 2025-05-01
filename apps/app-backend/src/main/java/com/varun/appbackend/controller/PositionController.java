@@ -1,5 +1,6 @@
 package com.varun.appbackend.controller;
 
+import com.varun.appbackend.dto.PositionPLResponseDTO;
 import com.varun.appbackend.dto.PositionResponseDTO;
 import com.varun.appbackend.service.PositionService;
 import org.springframework.http.ResponseEntity;
@@ -26,13 +27,19 @@ public class PositionController {
 
     /**
      * GET endpoint to fetch user' stock holdings
-     *
-     * @param userId ID of the user
-     * @return list of holdings (stock symbol + quantity)
      */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<PositionResponseDTO>> getUserPositions(@PathVariable Long userId) {
         List<PositionResponseDTO> positions = positionService.getUserPositions(userId);
         return ResponseEntity.ok(positions);
+    }
+
+    /**
+     * GET endpoint to fetch user positions with P&L data
+     */
+    @GetMapping("/user/{userId}/pl")
+    public ResponseEntity<List<PositionPLResponseDTO>> getUserPositionsWithPL(@PathVariable Long userId) {
+        List<PositionPLResponseDTO> plData = positionService.getUserPositionsWithPL(userId);
+        return ResponseEntity.ok(plData);
     }
 }
