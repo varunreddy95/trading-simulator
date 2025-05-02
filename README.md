@@ -1,6 +1,6 @@
 # 🧠 Trading Simulator
 
-Fullstack paper trading simulator with live crypto/stock price updates.
+Fullstack paper trading simulator with live stock price updates.
 
 A fullstack paper trading simulator built with:
 
