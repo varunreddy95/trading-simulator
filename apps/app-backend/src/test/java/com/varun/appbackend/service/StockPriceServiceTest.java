@@ -1,5 +1,6 @@
 package com.varun.appbackend.service;
 
+import com.varun.appbackend.dto.ChartDataPointDTO;
 import com.varun.appbackend.exception.StockNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +12,7 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -92,4 +94,51 @@ public class StockPriceServiceTest {
 
         assertThrows(StockNotFoundException.class, () -> stockPriceService.getCurrentPrice("AAPL"));
     }
+
+    @Test
+    @DisplayName("Should return historical prices")
+    void shouldReturnHistoricalPrices() {
+        String mockJson = """
+        {
+          "Time Series (Daily)": {
+            "2024-04-01": { "4. close": "150.0" },
+            "2024-03-31": { "4. close": "145.5" }
+          }
+        }
+        """;
+
+        server.expect(requestTo(org.hamcrest.Matchers.containsString("symbol=AAPL")))
+                .andRespond(withSuccess(mockJson, MediaType.APPLICATION_JSON));
+
+        List<ChartDataPointDTO> result = stockPriceService.getHistoricalPrices("AAPL", 2);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getClosingPrice()).isEqualTo(new BigDecimal("150.0"));
+        assertThat(result.get(1).getClosingPrice()).isEqualTo(new BigDecimal("145.5"));
+    }
+
+
+    @Test
+    @DisplayName("Should throw StockNotFoundException on malformed historical response")
+    void shouldThrowExceptionOnMalformedHistoricalResponse() {
+        String malformedJson = "{ not-valid-json ";
+
+        server.expect(requestTo(org.hamcrest.Matchers.containsString("function=TIME_SERIES_DAILY")))
+                .andRespond(withSuccess(malformedJson, MediaType.APPLICATION_JSON));
+
+        assertThrows(StockNotFoundException.class, () -> stockPriceService.getHistoricalPrices("AAPL", 2));
+    }
+
+    @Test
+    @DisplayName("Should throw StockNotFoundException if historical data is missing")
+    void shouldThrowExceptionWhenTimeSeriesMissing() {
+        String noDataJson = "{ \"Note\": \"API call frequency exceeded\" }";
+
+        server.expect(requestTo(org.hamcrest.Matchers.containsString("function=TIME_SERIES_DAILY")))
+                .andRespond(withSuccess(noDataJson, MediaType.APPLICATION_JSON));
+
+        assertThrows(StockNotFoundException.class, () -> stockPriceService.getHistoricalPrices("AAPL", 2));
+    }
+
+
 }
