@@ -1,8 +1,10 @@
 package com.varun.appbackend.service;
 
 import com.varun.appbackend.dto.ChartDataPointDTO;
+import com.varun.appbackend.dto.StockSearchDTO;
 import com.varun.appbackend.exception.StockNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.stereotype.Service;
@@ -105,6 +107,50 @@ public class StockPriceService {
 
         } catch (JSONException | NullPointerException e) {
             throw new StockNotFoundException("Failed to parse response for symbol: " + symbol);
+        }
+    }
+
+    /**
+     * Search stock by keywoord
+     *
+     * @param keyword The keyword to search for the stock
+     * @return List of results matching the keyword
+     */
+    public List<StockSearchDTO> searchStockByKeyword(String keyword) {
+        String url = UriComponentsBuilder.newInstance()
+                .scheme("https")
+                .host(baseUrl)
+                .path("/query")
+                .queryParam("function", "SYMBOL_SEARCH")
+                .queryParam("keywords", keyword)
+                .queryParam("apikey", apiKey)
+                .build()
+                .toUriString();
+
+        try {
+            String response = restTemplate.getForObject(url, String.class);
+            JSONObject json = new JSONObject(response);
+
+            if (!json.has("bestMatches")) {
+                return List.of();  // No matches found
+            }
+
+            JSONArray matches = json.getJSONArray("bestMatches");
+            List<StockSearchDTO> results = new ArrayList<>();
+
+            for (int i = 0; i < matches.length(); i++) {
+                JSONObject item = matches.getJSONObject(i);
+
+                String symbol = item.optString("1. symbol");
+                String name = item.optString("2. name");
+                String type = item.optString("3. type");
+                String region = item.optString("4. region");
+
+                results.add(new StockSearchDTO(symbol, name, type, region));
+            }
+            return results;
+        } catch (JSONException e) {
+            throw new RuntimeException("Failed to parse stock search response for keyword: " + keyword);
         }
     }
 }
