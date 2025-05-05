@@ -1,5 +1,6 @@
 package com.varun.appbackend.controller;
 
+import com.varun.appbackend.dto.LoginRequestDTO;
 import com.varun.appbackend.dto.RegisterRequestDTO;
 import com.varun.appbackend.model.User;
 import com.varun.appbackend.repository.UserRepository;
@@ -7,7 +8,10 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 /**
  * REST controller for authentication related endpoints
@@ -17,11 +21,11 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthController(UserRepository userRepository) {
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder(); // ideally should be injected as a bean
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/register")
@@ -45,5 +49,26 @@ public class AuthController {
 
         userRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequestDTO dto) {
+        Optional<User> userOpt = userRepository.findByEmail(dto.getIdentifier());
+
+        if (userOpt.isEmpty()) {
+            userOpt = userRepository.findByUsername(dto.getIdentifier());
+        }
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+
+        User user = userOpt.get();
+
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+
+        return ResponseEntity.ok("Login successful");
     }
 }
