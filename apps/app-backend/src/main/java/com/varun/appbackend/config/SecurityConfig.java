@@ -22,7 +22,7 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/api/auth/**",
-                                "/api/**" // you can fine-tune this as needed
+                                "/api/**"
                         ).permitAll()
                         .anyRequest().permitAll()
                 );
