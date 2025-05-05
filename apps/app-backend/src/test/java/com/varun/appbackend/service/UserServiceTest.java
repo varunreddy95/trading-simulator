@@ -52,6 +52,22 @@ public class UserServiceTest {
     }
 
     @Test
+    void testFindUserByEmail() {
+        String username = "varun";
+        String email = "xyz@gmail.com";
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+
+        Optional<User> foundUser = userService.findUserByEmail(email);
+
+        assertThat(foundUser).isPresent();
+        assertThat(foundUser.get().getEmail()).isEqualTo(email);
+    }
+
+    @Test
     void testFindById() {
         long userId = 1L;
         User user = new User();

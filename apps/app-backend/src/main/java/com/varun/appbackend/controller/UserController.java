@@ -28,7 +28,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> register(@RequestBody User user) {
         User savedUser = userService.registerUser(user);
-        return ResponseEntity.ok(new UserResponseDTO(savedUser.getId(), savedUser.getUsername()));
+        return ResponseEntity.ok(new UserResponseDTO(savedUser.getId(), savedUser.getUsername(), savedUser.getPassword()));
     }
 
     /**
@@ -37,9 +37,20 @@ public class UserController {
     @GetMapping("/username/{username}")
     public ResponseEntity<UserResponseDTO> getUserByUsername(@PathVariable String username) {
         Optional<User> user = userService.findUserByUsername(username);
-        return user.map(u -> ResponseEntity.ok(new UserResponseDTO(u.getId(), u.getUsername())))
+        return user.map(u -> ResponseEntity.ok(new UserResponseDTO(u.getId(), u.getUsername(), u.getEmail())))
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    /**
+     * GET a user by email
+     */
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UserResponseDTO> getUserByEmail(@PathVariable String email) {
+        Optional<User> user = userService.findUserByEmail(email);
+        return user.map(u -> ResponseEntity.ok(new UserResponseDTO(u.getId(), u.getUsername(), u.getEmail())))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 
     /**
      * GET a user by ID
@@ -47,7 +58,7 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable long id) {
         Optional<User> user = userService.findById(id);
-        return user.map(u -> ResponseEntity.ok(new UserResponseDTO(u.getId(), u.getUsername())))
+        return user.map(u -> ResponseEntity.ok(new UserResponseDTO(u.getId(), u.getUsername(), u.getEmail())))
                 .orElse(ResponseEntity.notFound().build());
     }
 }
