@@ -39,6 +39,16 @@ public class UserService {
     }
 
     /**
+     * Finds a user by their email
+     *
+     * @param email the username to search
+     * @return Optional of User
+     */
+    public Optional<User> findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    /**
      * Finds a user by their ID
      *
      * @param userId the user ID
