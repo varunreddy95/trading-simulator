@@ -1,13 +1,12 @@
 package com.varun.appbackend.controller;
 
-import com.varun.appbackend.dto.ForgotPasswordRequestDTO;
-import com.varun.appbackend.dto.LoginRequestDTO;
-import com.varun.appbackend.dto.RegisterRequestDTO;
-import com.varun.appbackend.dto.ResetPasswordDTO;
+import com.varun.appbackend.dto.*;
 import com.varun.appbackend.model.PasswordResetToken;
+import com.varun.appbackend.model.Role;
 import com.varun.appbackend.model.User;
 import com.varun.appbackend.repository.PasswordResetTokenRepository;
 import com.varun.appbackend.repository.UserRepository;
+import com.varun.appbackend.service.JwtService;
 import com.varun.appbackend.service.MailService;
 import com.varun.appbackend.util.ForgotPasswordRateLimiter;
 import jakarta.validation.Valid;
@@ -32,17 +31,20 @@ public class AuthController {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final ForgotPasswordRateLimiter rateLimiter;
     private final MailService mailService;
+    private final JwtService jwtService;
 
     public AuthController(UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
                           PasswordResetTokenRepository passwordResetTokenRepository,
                           MailService mailService,
-                          ForgotPasswordRateLimiter rateLimiter) {
+                          ForgotPasswordRateLimiter rateLimiter,
+                          JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.mailService = mailService;
         this.rateLimiter = rateLimiter;
+        this.jwtService = jwtService;
     }
 
     /**
@@ -68,6 +70,7 @@ public class AuthController {
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRole(Role.USER);
 
         userRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
@@ -79,7 +82,7 @@ public class AuthController {
      * @return user login successfully
      */
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginRequestDTO dto) {
+    public ResponseEntity<JwtResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
         Optional<User> userOpt = userRepository.findByEmail(dto.getIdentifier());
 
         if (userOpt.isEmpty()) {
@@ -87,17 +90,20 @@ public class AuthController {
         }
 
         if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         User user = userOpt.get();
 
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        return ResponseEntity.ok("Login successful");
+        String token = jwtService.generateToken(user.getUsername());
+
+        return ResponseEntity.ok(new JwtResponseDTO(token));
     }
+
 
     /**
      * POST user request for forgot password
