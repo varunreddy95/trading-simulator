@@ -1,9 +1,12 @@
 package com.varun.appbackend.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,14 +18,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class ForgotPasswordRateLimiter {
 
+    private static final Logger logger = LoggerFactory.getLogger(ForgotPasswordRateLimiter.class);
     private static final int LIMIT_MINUTES = 5;
 
-    // email -> last request time
     private final Map<String, LocalDateTime> lastRequestMap = new ConcurrentHashMap<>();
 
-    /**
-     * Checks if the user is allowed to request a new password reset.
-     */
     public boolean isAllowed(String email) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime lastTime = lastRequestMap.get(email);
@@ -31,12 +31,11 @@ public class ForgotPasswordRateLimiter {
             lastRequestMap.put(email, now);
             return true;
         }
+
+        logger.warn("Rate limit hit for email {} - wait {}s remaining", email, getRemainingCooldownSeconds(email));
         return false;
     }
 
-    /**
-     * Gets the remaining cooldown time for the given email.
-     */
     public long getRemainingCooldownSeconds(String email) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime lastTime = lastRequestMap.get(email);
@@ -46,12 +45,23 @@ public class ForgotPasswordRateLimiter {
         return Math.max(seconds, 0);
     }
 
-    /**
-     * Scheduled cleanup that runs every 10 minutes and removes expired entries.
-     */
     @Scheduled(fixedRate = 10 * 60 * 1000) // every 10 minutes
     public void cleanUpStaleEntries() {
         LocalDateTime cutoff = LocalDateTime.now().minusMinutes(LIMIT_MINUTES);
+        int before = lastRequestMap.size();
+
         lastRequestMap.entrySet().removeIf(entry -> entry.getValue().isBefore(cutoff));
+
+        int after = lastRequestMap.size();
+        int removed = before - after;
+
+        if (removed > 0) {
+            logger.info("Rate limiter cleanup: removed {} stale entries", removed);
+        }
     }
+
+    public Map<String, LocalDateTime> getAllEntries() {
+        return new HashMap<>(lastRequestMap); // return a copy for safety
+    }
+
 }

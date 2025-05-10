@@ -23,5 +23,5 @@ spring:
     endpoints:
       web:
         exposure:
-          include: health, info
+          include: health, info, rate-limit
 
