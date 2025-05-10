@@ -19,3 +19,9 @@ spring:
     api-key: 8P2EPHQTM5Y3KT77
     base-url: https://www.alphavantage.co
 
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health, info
+
