@@ -12,10 +12,12 @@ import com.varun.appbackend.util.ForgotPasswordRateLimiter;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -182,5 +184,23 @@ public class AuthController {
         passwordResetTokenRepository.delete(token);
 
         return ResponseEntity.ok("Password has been reset successfully");
+    }
+
+    @GetMapping
+    public ResponseEntity<UserResponseDTO> getCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = (User) authentication.getPrincipal();
+
+        UserResponseDTO dto = new UserResponseDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                List.of(user.getRole().name())
+        );
+
+        return ResponseEntity.ok(dto);
     }
 }
