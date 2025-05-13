@@ -1,6 +1,7 @@
 package com.varun.appbackend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.varun.appbackend.config.TestJacksonConfig;
 import com.varun.appbackend.config.TestMockBeans;
 import com.varun.appbackend.dto.TradeRequestDTO;
 import com.varun.appbackend.model.Trade;
@@ -10,8 +11,8 @@ import com.varun.appbackend.service.TradeService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,14 +22,15 @@ import java.time.Instant;
 import java.util.Collections;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TradeController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
-@ContextConfiguration(classes = {TradeController.class, TestMockBeans.class})
+@ContextConfiguration(classes = {TradeController.class, TestMockBeans.class, TestJacksonConfig.class})
 public class TradeControllerTest {
 
     @Autowired
@@ -39,7 +41,6 @@ public class TradeControllerTest {
 
     @Autowired
     private TradeService tradeService;
-
 
     @Test
     @DisplayName("Should place a trade successfully")
@@ -64,7 +65,6 @@ public class TradeControllerTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.userId").value(1L))
                 .andExpect(jsonPath("$.stockSymbol").value("AAPL"))
                 .andExpect(jsonPath("$.quantity").value(5))

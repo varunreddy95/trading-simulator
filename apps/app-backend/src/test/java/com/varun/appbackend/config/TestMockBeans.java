@@ -5,11 +5,14 @@ import com.varun.appbackend.exception.GlobalExceptionHandler;
 import com.varun.appbackend.repository.PasswordResetTokenRepository;
 import com.varun.appbackend.repository.UserRepository;
 import com.varun.appbackend.service.*;
+import com.varun.appbackend.util.ForgotPasswordRateLimiter;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @TestConfiguration
 public class TestMockBeans {
@@ -66,7 +69,14 @@ public class TestMockBeans {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Use real encoder if needed
+        return Mockito.mock(PasswordEncoder.class);
+    }
+
+    @Bean
+    public ForgotPasswordRateLimiter forgotPasswordRateLimiter() {
+        ForgotPasswordRateLimiter mockLimiter = Mockito.mock(ForgotPasswordRateLimiter.class);
+        when(mockLimiter.isAllowed(anyString())).thenReturn(true);
+        return mockLimiter;
     }
 
     @Bean

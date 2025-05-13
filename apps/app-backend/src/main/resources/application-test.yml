@@ -21,5 +21,6 @@ app:
 
 logging:
   level:
-    org.springframework: WARN
+    org.springframework: DEBUG
     com.varun: DEBUG
+

@@ -1,5 +1,6 @@
 package com.varun.appbackend.controller;
 
+import com.varun.appbackend.config.TestJacksonConfig;
 import com.varun.appbackend.config.TestMockBeans;
 import com.varun.appbackend.dto.TradeInsightDTO;
 import com.varun.appbackend.exception.GlobalExceptionHandler;
@@ -27,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(TradeInsightsController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
-@ContextConfiguration(classes = {TradeInsightsController.class, TestMockBeans.class, GlobalExceptionHandler.class})
+@ContextConfiguration(classes = {TradeInsightsController.class, TestMockBeans.class, GlobalExceptionHandler.class, TestJacksonConfig.class})
 public class TradeInsightsControllerTest {
 
     @Autowired

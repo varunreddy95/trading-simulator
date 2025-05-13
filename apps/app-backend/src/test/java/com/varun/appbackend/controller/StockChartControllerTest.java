@@ -1,5 +1,6 @@
 package com.varun.appbackend.controller;
 
+import com.varun.appbackend.config.TestJacksonConfig;
 import com.varun.appbackend.config.TestMockBeans;
 import com.varun.appbackend.dto.ChartDataPointDTO;
 import com.varun.appbackend.service.StockPriceService;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(controllers = StockChartController.class)
 @ActiveProfiles("test")
-@ContextConfiguration(classes = {StockChartController.class, TestMockBeans.class})
+@ContextConfiguration(classes = {StockChartController.class, TestMockBeans.class, TestJacksonConfig.class})
 public class StockChartControllerTest {
 
     @Autowired

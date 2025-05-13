@@ -2,7 +2,6 @@ package com.varun.appbackend.controller;
 
 import com.varun.appbackend.dto.*;
 import com.varun.appbackend.model.PasswordResetToken;
-import com.varun.appbackend.model.Role;
 import com.varun.appbackend.model.User;
 import com.varun.appbackend.repository.PasswordResetTokenRepository;
 import com.varun.appbackend.repository.UserRepository;
@@ -17,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -83,7 +81,7 @@ public class AuthController {
      * @return user login successfully
      */
     @PostMapping("/login")
-    public ResponseEntity<JwtResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO dto) {
         Optional<User> userOpt = userRepository.findByEmail(dto.getIdentifier());
 
         if (userOpt.isEmpty()) {
@@ -91,13 +89,13 @@ public class AuthController {
         }
 
         if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
         User user = userOpt.get();
 
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
         String token = jwtService.generateToken(user.getUsername());
