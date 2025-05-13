@@ -1,5 +1,6 @@
 package com.varun.appbackend.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.varun.appbackend.model.TradeType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,5 +23,7 @@ public class TradeResponseDTO {
     private int quantity;
     private BigDecimal price;
     private TradeType tradeType;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX", timezone = "UTC")
     private Instant timestamp;
 }

@@ -2,7 +2,6 @@ package com.varun.appbackend.controller;
 
 import com.varun.appbackend.dto.*;
 import com.varun.appbackend.model.PasswordResetToken;
-import com.varun.appbackend.model.Role;
 import com.varun.appbackend.model.User;
 import com.varun.appbackend.repository.PasswordResetTokenRepository;
 import com.varun.appbackend.repository.UserRepository;
@@ -12,6 +11,7 @@ import com.varun.appbackend.util.ForgotPasswordRateLimiter;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -70,7 +70,6 @@ public class AuthController {
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setRole(Role.USER);
 
         userRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
@@ -82,7 +81,7 @@ public class AuthController {
      * @return user login successfully
      */
     @PostMapping("/login")
-    public ResponseEntity<JwtResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO dto) {
         Optional<User> userOpt = userRepository.findByEmail(dto.getIdentifier());
 
         if (userOpt.isEmpty()) {
@@ -90,13 +89,13 @@ public class AuthController {
         }
 
         if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
         User user = userOpt.get();
 
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
         String token = jwtService.generateToken(user.getUsername());
@@ -182,5 +181,22 @@ public class AuthController {
         passwordResetTokenRepository.delete(token);
 
         return ResponseEntity.ok("Password has been reset successfully");
+    }
+
+    @GetMapping
+    public ResponseEntity<UserResponseDTO> getCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = (User) authentication.getPrincipal();
+
+        UserResponseDTO dto = new UserResponseDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail()
+        );
+
+        return ResponseEntity.ok(dto);
     }
 }

@@ -1,15 +1,18 @@
 package com.varun.appbackend.controller;
 
+import com.varun.appbackend.config.TestMockBeans;
 import com.varun.appbackend.dto.PortfolioSummaryDTO;
 import com.varun.appbackend.service.PositionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -22,13 +25,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(controllers = PortfolioController.class)
 @ActiveProfiles("test")
+@ContextConfiguration(classes = {PortfolioController.class, TestMockBeans.class})
 public class PortfolioControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @Autowired
     private PositionService positionService;
+
 
     @Test
     @DisplayName("Should return portfolio summary with balance, market value and net P&L")

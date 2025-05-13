@@ -25,8 +25,10 @@ public class JwtService {
 
     @PostConstruct
     public void init() {
+        System.out.println(">>> JWT Init with key: " + jwtSecret); // add just for test
         this.signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
+
 
     /**
      * Generate a JWT token for a given username (subject).
@@ -90,4 +92,5 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
 }

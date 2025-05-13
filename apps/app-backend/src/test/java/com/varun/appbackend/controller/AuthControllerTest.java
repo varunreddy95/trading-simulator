@@ -1,14 +1,17 @@
 package com.varun.appbackend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.varun.appbackend.config.TestJacksonConfig;
+import com.varun.appbackend.config.TestMockBeans;
 import com.varun.appbackend.dto.LoginRequestDTO;
 import com.varun.appbackend.dto.RegisterRequestDTO;
 import com.varun.appbackend.dto.ResetPasswordDTO;
+import com.varun.appbackend.exception.GlobalExceptionHandler;
 import com.varun.appbackend.model.PasswordResetToken;
+import com.varun.appbackend.model.User;
 import com.varun.appbackend.repository.PasswordResetTokenRepository;
 import com.varun.appbackend.repository.UserRepository;
-import com.varun.appbackend.model.User;
-import com.varun.appbackend.service.MailService;
+import com.varun.appbackend.service.JwtService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +20,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -29,30 +32,32 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(controllers = AuthController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
+@ContextConfiguration(classes = {AuthController.class, TestMockBeans.class, GlobalExceptionHandler.class, TestJacksonConfig.class})
 public class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @Autowired
     private UserRepository userRepository;
 
-    @MockitoBean
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @MockitoBean
+    @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
-    @MockitoBean
-    private MailService mailService;
+    @Autowired
+    private JwtService jwtService;
+
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     @Test
     @DisplayName("Should register user successfully with valid input")
@@ -140,12 +145,14 @@ public class AuthControllerTest {
 
         when(userRepository.findByUsername("varun123")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("Password@123", user.getPassword())).thenReturn(true);
+        when(jwtService.generateToken(user.getUsername())).thenReturn("mocked-jwt-token");
+
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Login successful"));
+                .andExpect(jsonPath("$.token").value("mocked-jwt-token"));
     }
 
     @Test
@@ -162,12 +169,13 @@ public class AuthControllerTest {
 
         when(userRepository.findByEmail("varun@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("Password@123", user.getPassword())).thenReturn(true);
+        when(jwtService.generateToken(user.getUsername())).thenReturn("mocked-jwt-token");
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Login successful"));
+                .andExpect(jsonPath("$.token").value("mocked-jwt-token"));
     }
 
     @Test
@@ -223,12 +231,12 @@ public class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("email", email))))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Password reset link sent"));
+                .andExpect(content().string("If this email exists, a reset link has been sent"));
     }
 
     @Test
-    @DisplayName("Should return 404 if email not found in forgot-password")
-    void shouldFailIfEmailNotFound() throws Exception {
+    @DisplayName("Should return generic message even if email not found (for security)")
+    void shouldReturnGenericMessageIfEmailNotFound() throws Exception {
         String email = "notfound@example.com";
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
@@ -236,8 +244,8 @@ public class AuthControllerTest {
         mockMvc.perform(post("/api/auth/forgot-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("email", email))))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string("User with this email does not exist"));
+                .andExpect(status().isOk())
+                .andExpect(content().string("If this email exists, a reset link has been sent"));
     }
 
     @Test
