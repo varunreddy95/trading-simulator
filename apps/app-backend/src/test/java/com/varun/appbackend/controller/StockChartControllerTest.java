@@ -1,17 +1,17 @@
 package com.varun.appbackend.controller;
 
+import com.varun.appbackend.config.TestMockBeans;
 import com.varun.appbackend.dto.ChartDataPointDTO;
 import com.varun.appbackend.service.StockPriceService;
-import org.springframework.http.MediaType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,13 +25,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(controllers = StockChartController.class)
 @ActiveProfiles("test")
+@ContextConfiguration(classes = {StockChartController.class, TestMockBeans.class})
 public class StockChartControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @Autowired
     private StockPriceService stockPriceService;
+
 
     @Test
     @DisplayName("Should return historical char data")

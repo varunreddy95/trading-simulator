@@ -1,21 +1,21 @@
 package com.varun.appbackend.controller;
 
+import com.varun.appbackend.config.TestMockBeans;
+import com.varun.appbackend.dto.PositionPLResponseDTO;
 import com.varun.appbackend.dto.PositionResponseDTO;
 import com.varun.appbackend.service.PositionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import com.varun.appbackend.dto.PositionPLResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -27,14 +27,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(controllers = PositionController.class)
-@SpringJUnitConfig
 @ActiveProfiles("test")
+@ContextConfiguration(classes = {PositionController.class, TestMockBeans.class})
 public class PositionControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @Autowired
     private PositionService positionService;
 
 

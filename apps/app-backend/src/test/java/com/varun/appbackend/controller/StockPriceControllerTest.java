@@ -1,5 +1,6 @@
 package com.varun.appbackend.controller;
 
+import com.varun.appbackend.config.TestMockBeans;
 import com.varun.appbackend.dto.StockSearchDTO;
 import com.varun.appbackend.exception.StockNotFoundException;
 import com.varun.appbackend.service.StockPriceService;
@@ -10,8 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -21,17 +21,18 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(StockPriceController.class)
-@SpringJUnitConfig
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
+@ContextConfiguration(classes = {StockPriceController.class, TestMockBeans.class})
 public class StockPriceControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @Autowired
     private StockPriceService stockPriceService;
+
 
     @Test
     @DisplayName("Should return stock price for valid symbol")

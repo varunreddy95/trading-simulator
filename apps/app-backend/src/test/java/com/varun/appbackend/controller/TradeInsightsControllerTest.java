@@ -1,6 +1,8 @@
 package com.varun.appbackend.controller;
 
+import com.varun.appbackend.config.TestMockBeans;
 import com.varun.appbackend.dto.TradeInsightDTO;
+import com.varun.appbackend.exception.GlobalExceptionHandler;
 import com.varun.appbackend.exception.UserNotFoundException;
 import com.varun.appbackend.service.TradeService;
 import org.junit.jupiter.api.DisplayName;
@@ -10,8 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -23,17 +24,18 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(TradeInsightsController.class)
-@SpringJUnitConfig
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
+@ContextConfiguration(classes = {TradeInsightsController.class, TestMockBeans.class, GlobalExceptionHandler.class})
 public class TradeInsightsControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @Autowired
     private TradeService tradeService;
+
 
     @Test
     @DisplayName("Should return trade summary per stock symbol for user")
@@ -78,6 +80,8 @@ public class TradeInsightsControllerTest {
         mockMvc.perform(get("/api/trade-insights/user/999")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("User not found"));
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("User not found"))
+                .andDo(result -> System.out.println(result.getResponse().getContentAsString()));
     }
 }

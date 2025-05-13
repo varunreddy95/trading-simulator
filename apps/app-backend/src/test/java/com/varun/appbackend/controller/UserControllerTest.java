@@ -1,6 +1,7 @@
 package com.varun.appbackend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.varun.appbackend.config.TestMockBeans;
 import com.varun.appbackend.model.User;
 import com.varun.appbackend.service.UserService;
 import org.junit.jupiter.api.DisplayName;
@@ -9,8 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -24,10 +24,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Integration tests for UserController endpoints
  */
-@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(UserController.class)
-@SpringJUnitConfig
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
+@ContextConfiguration(classes = {UserController.class, TestMockBeans.class})
 public class UserControllerTest {
 
     @Autowired
@@ -36,7 +36,7 @@ public class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockitoBean
+    @Autowired
     private UserService userService;
 
     @Test

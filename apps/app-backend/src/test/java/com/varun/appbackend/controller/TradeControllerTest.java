@@ -1,6 +1,7 @@
 package com.varun.appbackend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.varun.appbackend.config.TestMockBeans;
 import com.varun.appbackend.dto.TradeRequestDTO;
 import com.varun.appbackend.model.Trade;
 import com.varun.appbackend.model.TradeType;
@@ -12,8 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -25,10 +25,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(TradeController.class)
-@SpringJUnitConfig
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
+@ContextConfiguration(classes = {TradeController.class, TestMockBeans.class})
 public class TradeControllerTest {
 
     @Autowired
@@ -37,8 +37,9 @@ public class TradeControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockitoBean
+    @Autowired
     private TradeService tradeService;
+
 
     @Test
     @DisplayName("Should place a trade successfully")

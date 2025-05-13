@@ -72,7 +72,6 @@ public class AuthController {
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setRole(Role.USER);
 
         userRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
@@ -197,8 +196,7 @@ public class AuthController {
         UserResponseDTO dto = new UserResponseDTO(
                 user.getId(),
                 user.getUsername(),
-                user.getEmail(),
-                List.of(user.getRole().name())
+                user.getEmail()
         );
 
         return ResponseEntity.ok(dto);

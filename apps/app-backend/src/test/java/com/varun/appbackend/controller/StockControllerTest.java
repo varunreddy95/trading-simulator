@@ -1,6 +1,7 @@
 package com.varun.appbackend.controller;
 
 
+import com.varun.appbackend.config.TestMockBeans;
 import com.varun.appbackend.model.Stock;
 import com.varun.appbackend.service.StockService;
 import org.junit.jupiter.api.DisplayName;
@@ -8,27 +9,32 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(StockController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@WebMvcTest(controllers = StockController.class)
 @ActiveProfiles("test")
+@ContextConfiguration(classes = {StockController.class, TestMockBeans.class})
 class StockControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @Autowired
     private StockService stockService;
 
     @Test
