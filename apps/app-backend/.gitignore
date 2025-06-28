@@ -34,6 +34,7 @@ build/
 
 
 ### application config files ###
-/src/main/resources/application.yml
-/src/main/resources/application.properties
-/src/test/resources/application-test.yml
+/apps/app-backend/src/main/resources/application.yml
+/apps/app-backend/src/main/resources/application.properties
+/apps/app-backend/src/main/resources/application-test.yml
+/apps/app-backend/src/test/resources/application-test.properties
